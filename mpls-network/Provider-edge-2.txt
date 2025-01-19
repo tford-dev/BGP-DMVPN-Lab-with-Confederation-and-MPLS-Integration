@@ -1,0 +1,245 @@
+PE2#show run
+Building configuration...
+
+Current configuration : 5683 bytes
+!
+! Last configuration change at 18:22:59 UTC Sun Jan 19 2025
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname PE2
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$BYkX$/S7PEMfQWJUompqHwu.I4/
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+no ip icmp rate-limit unreachable
+!
+!
+!
+ip vrf C1
+ rd 6400:102
+ route-target export 6400:102
+ route-target import 6400:101
+!
+ip vrf C2
+ rd 6400:202
+ route-target export 6400:202
+ route-target import 6400:201
+!
+!
+!
+!
+no ip domain lookup
+ip domain name terrysnetwork.com
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+multilink bundle-name authenticated
+mpls label protocol ldp
+!
+!
+!
+!
+username tech secret 5 $1$p4eN$/8wSXkdAB.plx98v/8FgT/
+username admin privilege 15 secret 5 $1$yIhK$zBNoGrOz1HowxumBjEBIn.
+!
+redundancy
+!
+no cdp log mismatch duplex
+!
+ip tcp synwait-time 5
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 7.7.7.7 255.255.255.255
+ ipv6 enable
+ ospfv3 1 ipv4 area 0
+!
+interface Loopback1
+ ip vrf forwarding C1
+ ip address 1.1.1.5 255.255.255.255
+!
+interface Loopback2
+ ip vrf forwarding C2
+ ip address 2.2.2.5 255.255.255.255
+!
+interface Loopback3
+ ip address 6.6.6.6 255.255.255.255
+ ipv6 enable
+ ospfv3 1 ipv4 area 0
+!
+interface GigabitEthernet0/0
+ description To P2
+ ip address 192.168.0.6 255.255.255.252
+ duplex auto
+ speed auto
+ media-type rj45
+ ipv6 enable
+ mpls ip
+ ospfv3 authentication ipsec spi 768 sha1 2222222222222222222222222222222222222222
+ ospfv3 1 ipv4 area 0
+!
+interface GigabitEthernet0/1
+ ip vrf forwarding C1
+ ip address 172.16.1.5 255.255.255.252
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ ip vrf forwarding C1
+ ip address 172.16.1.9 255.255.255.252
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ ip vrf forwarding C2
+ ip address 172.16.2.5 255.255.255.252
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/4
+ ip vrf forwarding C2
+ ip address 172.16.2.9 255.255.255.252
+ duplex auto
+ speed auto
+ media-type rj45
+!
+router ospfv3 1
+ router-id 7.7.7.7
+ !
+ address-family ipv4 unicast
+  router-id 7.7.7.7
+ exit-address-family
+!
+router bgp 6400
+ bgp router-id 6.6.6.6
+ bgp log-neighbor-changes
+ neighbor 4.4.4.4 remote-as 6400
+ neighbor 4.4.4.4 update-source Loopback3
+ !
+ address-family ipv4
+  neighbor 4.4.4.4 activate
+  neighbor 4.4.4.4 next-hop-self
+ exit-address-family
+ !
+ address-family vpnv4
+  neighbor 4.4.4.4 activate
+  neighbor 4.4.4.4 send-community extended
+ exit-address-family
+ !
+ address-family ipv4 vrf C1
+  network 172.16.1.4 mask 255.255.255.252
+  network 172.16.1.8 mask 255.255.255.252
+  neighbor 172.16.1.6 remote-as 6402
+  neighbor 172.16.1.6 password C1BR@NCH1toPE2
+  neighbor 172.16.1.6 activate
+  neighbor 172.16.1.6 next-hop-self
+  neighbor 172.16.1.10 remote-as 6403
+  neighbor 172.16.1.10 password C1BR@NCH2toPE2
+  neighbor 172.16.1.10 activate
+  neighbor 172.16.1.10 next-hop-self
+ exit-address-family
+ !
+ address-family ipv4 vrf C2
+  network 172.16.2.4 mask 255.255.255.252
+  network 172.16.2.8 mask 255.255.255.252
+  neighbor 172.16.2.6 remote-as 6410
+  neighbor 172.16.2.6 password C2BR@NCH1toPE2
+  neighbor 172.16.2.6 activate
+  neighbor 172.16.2.6 next-hop-self
+  neighbor 172.16.2.10 remote-as 6410
+  neighbor 172.16.2.10 password C2BR@NCH2toPE2
+  neighbor 172.16.2.10 activate
+  neighbor 172.16.2.10 next-hop-self
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip ssh version 2
+!
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line vty 0 4
+ login local
+ transport input ssh
+!
+no scheduler allocate
+!
+end

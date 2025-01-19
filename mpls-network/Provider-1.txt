@@ -1,0 +1,175 @@
+P1#show run
+Building configuration...
+
+Current configuration : 3873 bytes
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname P1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$l/MP$pKloJ0Utfdx4K/282Tciv/
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+no ip icmp rate-limit unreachable
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name terrysnetwork.com
+ip cef
+ipv6 unicast-routing
+ipv6 cef
+!
+multilink bundle-name authenticated
+mpls label protocol ldp
+!
+!
+!
+!
+username tech secret 5 $1$eW3m$GY3.ysyNILEUkii4r/mN./
+username admin privilege 15 secret 5 $1$78Ut$7kemadZ2aIfC.WCrzXit41
+!
+redundancy
+!
+no cdp log mismatch duplex
+!
+ip tcp synwait-time 5
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 5.5.5.5 255.255.255.255
+ ipv6 enable
+ ospfv3 1 ipv4 area 0
+!
+interface GigabitEthernet0/0
+ description To PE1
+ ip address 192.168.0.2 255.255.255.252
+ duplex auto
+ speed auto
+ media-type rj45
+ ipv6 enable
+ mpls ip
+ ospfv3 authentication ipsec spi 512 sha1 1111111111111111111111111111111111111111
+ ospfv3 1 ipv4 area 0
+!
+interface GigabitEthernet0/1
+ description to PE2
+ ip address 192.168.0.5 255.255.255.252
+ duplex auto
+ speed auto
+ media-type rj45
+ ipv6 enable
+ mpls ip
+ ospfv3 authentication ipsec spi 768 sha1 2222222222222222222222222222222222222222
+ ospfv3 1 ipv4 area 0
+!
+interface GigabitEthernet0/2
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+router ospfv3 1
+ router-id 5.5.5.5
+ !
+ address-family ipv4 unicast
+  router-id 5.5.5.5
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip ssh version 2
+!
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line vty 0 4
+ login local
+ transport input ssh
+!
+no scheduler allocate
+!
+end

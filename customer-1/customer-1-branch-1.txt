@@ -1,0 +1,198 @@
+C1-BRANCH1#show run
+Building configuration...
+
+Current configuration : 4488 bytes
+!
+! Last configuration change at 18:20:28 UTC Sun Jan 19 2025
+!
+version 15.6
+service timestamps debug datetime msec
+service timestamps log datetime msec
+no service password-encryption
+!
+hostname C1-BRANCH1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+enable secret 5 $1$wWyh$yV8BOT2VF3796B2FzleHj.
+!
+no aaa new-model
+ethernet lmi ce
+!
+!
+!
+mmi polling-interval 60
+no mmi auto-configure
+no mmi pvc
+mmi snmp-timeout 180
+!
+!
+!
+!
+!
+no ip icmp rate-limit unreachable
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+ip domain name company1network.com
+ip cef
+no ipv6 cef
+!
+multilink bundle-name authenticated
+!
+!
+!
+!
+username company1-tech secret 5 $1$yse8$4tTKVWtZBArtg5A.U3AgD.
+username admin privilege 15 secret 5 $1$gKeR$3N6A5DOTTsh5K5/k/1oUR.
+!
+redundancy
+!
+no cdp log mismatch duplex
+!
+ip tcp synwait-time 5
+!
+!
+!
+!
+!
+crypto isakmp policy 10
+ encr aes 256
+ authentication pre-share
+ group 2
+ lifetime 28800
+crypto isakmp key C1-KEY address 0.0.0.0
+!
+!
+crypto ipsec transform-set C1-SET esp-aes 256 esp-sha-hmac
+ mode transport
+!
+crypto ipsec profile C1-PROFILE
+ set transform-set C1-SET
+ set pfs group2
+!
+!
+!
+!
+!
+!
+!
+interface Loopback0
+ ip address 1.1.1.2 255.255.255.255
+!
+interface Tunnel0
+ ip address 192.168.100.2 255.255.255.248
+ no ip redirects
+ ip nhrp authentication C1-Key
+ ip nhrp map 192.168.100.1 172.16.1.2
+ ip nhrp map multicast 172.16.1.2
+ ip nhrp network-id 100
+ ip nhrp nhs 192.168.100.1
+ ip nhrp shortcut
+ tunnel source GigabitEthernet0/0
+ tunnel mode gre multipoint
+ tunnel protection ipsec profile C1-PROFILE
+!
+interface GigabitEthernet0/0
+ ip address 172.16.1.6 255.255.255.252
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/1
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/2
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+interface GigabitEthernet0/3
+ no ip address
+ shutdown
+ duplex auto
+ speed auto
+ media-type rj45
+!
+router bgp 6402
+ bgp router-id 1.1.1.2
+ bgp log-neighbor-changes
+ neighbor 172.16.1.5 remote-as 6400
+ neighbor 172.16.1.5 password C1BR@NCH1toPE2
+ neighbor 192.168.100.1 remote-as 6401
+ !
+ address-family ipv4
+  network 1.1.1.2 mask 255.255.255.255
+  network 192.168.100.0 mask 255.255.255.248
+  neighbor 172.16.1.5 activate
+  neighbor 192.168.100.1 activate
+ exit-address-family
+!
+ip forward-protocol nd
+!
+!
+no ip http server
+no ip http secure-server
+ip ssh version 2
+!
+!
+!
+!
+control-plane
+!
+banner exec ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner incoming ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+banner login ^C
+**************************************************************************
+* IOSv is strictly limited to use for evaluation, demonstration and IOS  *
+* education. IOSv is provided as-is and is not supported by Cisco's      *
+* Technical Advisory Center. Any use or disclosure, in whole or in part, *
+* of the IOSv Software or Documentation to any third party for any       *
+* purposes is expressly prohibited except as otherwise authorized by     *
+* Cisco in writing.                                                      *
+**************************************************************************^C
+!
+line con 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line aux 0
+ exec-timeout 0 0
+ privilege level 15
+ logging synchronous
+line vty 0 4
+ login local
+ transport input ssh
+!
+no scheduler allocate
+!
+end
+
